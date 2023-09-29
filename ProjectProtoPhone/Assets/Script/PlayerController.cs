@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     private float gravityValue = -9.81f;
 
     public PlayerInput playerInput;
+    [SerializeField] private float damage = 100;
 
     private void Start()
     {
@@ -22,6 +23,28 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        Ray();
+        Movement();
+    }
+
+
+    void Ray()
+    {
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 2.5f))
+        {
+            Debug.DrawRay(transform.position, transform.forward * 2.5f, Color.yellow);
+            if (hit.transform.GetComponent<IDamage>() != null)
+            {
+                hit.transform.GetComponent<IDamage>().Damage(damage);
+            }
+        }
+    }
+    
+    
+    void Movement()
+    {
         groundedPlayer = controller.isGrounded;
         if (groundedPlayer && playerVelocity.y < 0)
         {
@@ -29,7 +52,6 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 input = playerInput.actions["Move"].ReadValue<Vector2>();
-        //Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
         Vector3 move = new Vector3(input.x, 0,input.y);
         controller.Move(move * Time.deltaTime * playerSpeed);
 
@@ -37,8 +59,7 @@ public class PlayerController : MonoBehaviour
         {
             gameObject.transform.forward = move;
         }
-
-        // Changes the height position of the player..
+        
         if (Input.GetButtonDown("Jump") && groundedPlayer)
         {
             playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
