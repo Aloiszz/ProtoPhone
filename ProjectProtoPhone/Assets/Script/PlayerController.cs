@@ -30,11 +30,11 @@ public class PlayerController : MonoBehaviour
 
     void Ray()
     {
-
+        Debug.DrawRay(transform.position, transform.forward * 2.5f, Color.red);
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, 2.5f))
         {
-            Debug.DrawRay(transform.position, transform.forward * 2.5f, Color.yellow);
+            
             if (hit.transform.GetComponent<IDamage>() != null)
             {
                 hit.transform.GetComponent<IDamage>().Damage(damage);
