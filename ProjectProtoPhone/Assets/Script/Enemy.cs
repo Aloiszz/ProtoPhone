@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +7,10 @@ public class Enemy : MonoBehaviour, IDamage
 {
     [SerializeField] private float life = 100;
     [SerializeField] private GameObject bloodSheld;
+
+    public uint num;
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -25,4 +27,6 @@ public class Enemy : MonoBehaviour, IDamage
     {
         life -= damage;
     }
+    
+    
 }

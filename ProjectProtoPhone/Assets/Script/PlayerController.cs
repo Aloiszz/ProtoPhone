@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    public bool isCovered;
+    
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
@@ -14,6 +17,22 @@ public class PlayerController : MonoBehaviour
 
     public PlayerInput playerInput;
     [SerializeField] private float damage = 100;
+
+    public static PlayerController instance;
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        else
+        {
+            instance = this;
+        }
+        
+    }
+    
 
     private void Start()
     {
@@ -34,8 +53,7 @@ public class PlayerController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, 2.5f))
         {
-            
-            if (hit.transform.GetComponent<IDamage>() != null)
+            if (hit.transform.GetComponent<IDamage>() != null && isCovered)
             {
                 hit.transform.GetComponent<IDamage>().Damage(damage);
             }

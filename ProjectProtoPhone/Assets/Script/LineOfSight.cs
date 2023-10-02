@@ -15,8 +15,15 @@ public class LineOfSight : MonoBehaviour
     private Bounds player_bounds;
     private Coroutine detect_player;
     public bool isHiden;
+    public SpriteRenderer sideeys;
 
-    private void Awake() => detection_collider = this.GetComponent<SphereCollider>();
+    public float fov = 70;
+    private Vector3[] points;
+    
+    private void Awake()
+    {
+        detection_collider = this.GetComponent<SphereCollider>();
+    } 
 
     private void Start()
     {
@@ -38,12 +45,10 @@ public class LineOfSight : MonoBehaviour
         {
             target = null;
             StopCoroutine( detect_player );
-            // player is hidden
         }
     }
 
-    public float fov = 70;
-    private Vector3[] points;
+    
     IEnumerator DetectPlayer()
     {
         while ( true )
@@ -65,23 +70,26 @@ public class LineOfSight : MonoBehaviour
                 
             }
 
-            if (points_hidden >= points.Length)
+            if (points_hidden >= points.Length)// player is hidden
             {
                 isHiden = true;
+                PlayerController.instance.isCovered = true;
+                sideeys.color = new Color (1, 1, 1, .2f); 
             }
-            // player is hidden
-            else
+            
+            else// player is visible
             {
                 isHiden = false;
+                PlayerController.instance.isCovered = false;
+                sideeys.color = new Color (1, 0, 0, .2f); 
             }
-                // player is visible
+                
         }
     }
 
     private bool IsPointCovered( Vector3 target_direction, float target_distance )
     {
         RaycastHit[] hits = Physics.RaycastAll( this.transform.position, target_direction, detection_collider.radius );
-
         
         foreach ( RaycastHit hit in hits )
         {
@@ -92,7 +100,7 @@ public class LineOfSight : MonoBehaviour
                 if ( cover_distance < target_distance )
                     return true;
             }
-            Debug.DrawRay(transform.position, hit.transform.forward * 2.5f, Color.red);
+            
         }
         
         return false;
