@@ -125,6 +125,7 @@ public class LineOfSight : MonoBehaviour
     }
 
     
+    
     void OnDrawGizmos()
     {
         if (isHiden)
@@ -143,9 +144,12 @@ public class LineOfSight : MonoBehaviour
             Gizmos.DrawLine(transform.position, target.transform.position);
         }
 
-        Handles.DrawWireArc(transform.position, Vector3.up, Vector3.forward, 360, detection_collider.radius);
-        Debug.DrawLine(transform.position, transform.position + DirectionFromAngle(transform.eulerAngles.y , fov) * detection_collider.radius, Color.yellow);
-        Debug.DrawLine(transform.position, transform.position + DirectionFromAngle(transform.eulerAngles.y , -fov) * detection_collider.radius, Color.yellow);
+        if (Application.isPlaying)
+        {
+            Handles.DrawWireArc(transform.position, Vector3.up, Vector3.forward, 360, detection_collider.radius);
+            Debug.DrawLine(transform.position, transform.position + DirectionFromAngle(transform.eulerAngles.y , fov) * detection_collider.radius, Color.yellow);
+            Debug.DrawLine(transform.position, transform.position + DirectionFromAngle(transform.eulerAngles.y , -fov) * detection_collider.radius, Color.yellow);
+        }
     }
 
     private Vector3 DirectionFromAngle(float eulerY, float angleInDegrees)
