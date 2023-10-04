@@ -9,9 +9,7 @@ public class Enemy : MonoBehaviour, IDamage
     [SerializeField] private GameObject bloodSheld;
 
     public uint num;
-    void Start()
-    {
-    }
+   
 
     // Update is called once per frame
     void Update()
