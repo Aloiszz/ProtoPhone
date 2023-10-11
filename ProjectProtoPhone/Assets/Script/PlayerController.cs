@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -10,11 +12,17 @@ public class PlayerController : MonoBehaviour
     private Vector3 playerVelocity;
     private bool groundedPlayer;
     public float playerSpeed = 2.0f;
+    private float initPlayerSeed;
     private float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
 
     public PlayerInput playerInput;
     [SerializeField] private float damage = 100;
+
+    [Header("Roll")]
+    [SerializeField] private float rollForce;
+    [SerializeField] private float rollDuration;
+    private bool isRolling;
 
     public static PlayerController instance;
     
@@ -36,8 +44,10 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-    
-
+    private void Start()
+    { 
+        initPlayerSeed = playerSpeed;
+    }
 
     void Update()
     {
@@ -54,6 +64,21 @@ public class PlayerController : MonoBehaviour
         }*/
     }
 
+    // Called with a btn in the UI
+    public void PlayerRoll()
+    {
+        if (isRolling) return;
+        isRolling = true;
+        playerSpeed += rollForce;
+        StartCoroutine(RollCd());
+    }
+
+    private IEnumerator RollCd()
+    {
+        yield return new WaitForSeconds(rollDuration);
+        playerSpeed = initPlayerSeed;
+        isRolling = false;
+    }
 
     void Ray()
     {
