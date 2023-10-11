@@ -1,5 +1,5 @@
 {
-    "name": "Player",
+    "name": "Playeraction",
     "maps": [
         {
             "name": "Player",
@@ -9,6 +9,15 @@
                     "name": "Move",
                     "type": "Value",
                     "id": "b9c44e31-4b31-4647-9a9a-6b5b2307d221",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "TouchPosition",
+                    "type": "Value",
+                    "id": "d43871d4-f45b-4377-8ba1-f9b51261a6d8",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
@@ -24,6 +33,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "32cf7bd4-8ee5-415a-b8b5-6c20748ca8ce",
+                    "path": "<Touchscreen>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TouchPosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

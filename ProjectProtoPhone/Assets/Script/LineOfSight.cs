@@ -5,8 +5,12 @@ using UnityEngine;
 
 [RequireComponent( typeof( SphereCollider ))]
 
+
 public class LineOfSight : MonoBehaviour
 {
+    private Enemy _enemy;
+    private Enemy.EnemyState _enemyBaseState;
+    
     [SerializeField] private GameObject target;
     [SerializeField] private float detection_delay = 0.5f;
 
@@ -23,10 +27,12 @@ public class LineOfSight : MonoBehaviour
     private void Awake()
     {
         detection_collider = this.GetComponent<SphereCollider>();
+        _enemy = GetComponentInParent<Enemy>();
     } 
 
     private void Start()
     {
+        _enemyBaseState = _enemy.state;
     }
 
     private void OnTriggerEnter( Collider other )
@@ -44,6 +50,7 @@ public class LineOfSight : MonoBehaviour
         if ( other.tag == "Player" )
         {
             target = null;
+            _enemy.ReloadDestination();
             StopCoroutine( detect_player );
         }
     }
@@ -74,14 +81,27 @@ public class LineOfSight : MonoBehaviour
             {
                 isHiden = true;
                 PlayerController.instance.isCovered = true;
-                sideeys.color = new Color (1, 1, 1, .2f); 
+                sideeys.color = new Color (1, 1, 1, .2f);
+
+                switch (_enemyBaseState)
+                {
+                    case Enemy.EnemyState.still:
+                        _enemy.state = Enemy.EnemyState.still;
+                        break;
+                    case Enemy.EnemyState.patrol:
+                        _enemy.state = Enemy.EnemyState.patrol;
+                        _enemy.InteruptDestination();
+                        _enemy.ReloadDestination();
+                        break;
+                } // les ennemis revienne a leurs train train quotidien
             }
             
             else// player is visible
             {
                 isHiden = false;
                 PlayerController.instance.isCovered = false;
-                sideeys.color = new Color (1, 0, 0, .2f); 
+                sideeys.color = new Color (1, 0, 0, .2f);
+                _enemy.state = Enemy.EnemyState.alert; // Les enemey sont alerté 
             }
                 
         }
@@ -125,7 +145,7 @@ public class LineOfSight : MonoBehaviour
     }
 
     
-    
+    #if UNITY_EDITOR
     void OnDrawGizmos()
     {
         if (isHiden)
@@ -151,6 +171,7 @@ public class LineOfSight : MonoBehaviour
             Debug.DrawLine(transform.position, transform.position + DirectionFromAngle(transform.eulerAngles.y , -fov) * detection_collider.radius, Color.yellow);
         }
     }
+    #endif
 
     private Vector3 DirectionFromAngle(float eulerY, float angleInDegrees)
     {

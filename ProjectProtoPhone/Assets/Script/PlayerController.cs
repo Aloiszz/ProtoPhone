@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -16,6 +17,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float damage = 100;
 
     public static PlayerController instance;
+    
+    public Camera cam;
+    public NavMeshAgent agent;
+    
     private void Awake()
     {
         if (instance != null && instance != this)
@@ -27,20 +32,26 @@ public class PlayerController : MonoBehaviour
         {
             instance = this;
         }
-        
-    }
-    
-
-    private void Start()
-    {
         controller = gameObject.AddComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
     }
+
+    
+
 
     void Update()
     {
         Ray();
         Movement();
+        /*if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                agent.SetDestination(hit.point);
+            }
+        }*/
     }
 
 
@@ -73,11 +84,6 @@ public class PlayerController : MonoBehaviour
         if (move != Vector3.zero)
         {
             gameObject.transform.forward = move;
-        }
-        
-        if (Input.GetButtonDown("Jump") && groundedPlayer)
-        {
-            playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
         }
 
         playerVelocity.y += gravityValue * Time.deltaTime;
