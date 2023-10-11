@@ -29,12 +29,21 @@ public class Enemy : MonoBehaviour, IDamage
      private float lastfired; 
     [SerializeField] private GameObject Bullet;
     private Animator _animator;
+
+    [Range(0, 50)] public float strees;
+    private Rigidbody rb;
+    [SerializeField] private float stunDuration;
+    [SerializeField] private GameObject coneVision;
+    [SerializeField] private GameObject _lineOfSight;
+    
+    
     void Start()
     {
         baseState = state;
         _animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
-        
+        rb = GetComponent<Rigidbody>();
+
         ReloadDestination();
     }
 
@@ -121,12 +130,34 @@ public class Enemy : MonoBehaviour, IDamage
             Rigidbody rbBullet = bullet.GetComponent<Rigidbody>();
             rbBullet.AddForce((PlayerController.instance.transform.position - transform.position).normalized * 50, ForceMode.Impulse);
         }
-        
     }
-    
 
     public void Damage(float damage)
     {
         life -= damage;
+    }
+
+    public void HitByRolling()
+    {
+        StartCoroutine(Push());
+        StartCoroutine(Stun());
+    }
+
+    private IEnumerator Push()
+    {
+        PlayerController.instance.debugTmp.text = 0.ToString();
+        rb.AddForce(PlayerController.instance.transform.forward * PlayerController.instance.pushForce, ForceMode.Impulse);
+        yield return new WaitForSeconds(PlayerController.instance.pushDuration);
+        rb.velocity = Vector3.zero;
+    }
+
+    private IEnumerator Stun()
+    {
+        PlayerController.instance.debugTmp.text = 1.ToString();
+        coneVision.SetActive(false);
+        _lineOfSight.SetActive(false);
+        yield return new WaitForSeconds(stunDuration);
+       _lineOfSight.SetActive(true);
+        coneVision.SetActive(true);
     }
 }

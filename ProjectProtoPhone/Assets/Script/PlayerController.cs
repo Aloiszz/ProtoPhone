@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -23,6 +24,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float rollForce;
     [SerializeField] private float rollDuration;
     private bool isRolling;
+    
+    [Header("Push")]
+    public float pushForce;
+    public float pushDuration;
+
+    public TextMeshProUGUI debugTmp;
 
     public static PlayerController instance;
     
@@ -53,6 +60,7 @@ public class PlayerController : MonoBehaviour
     {
         Ray();
         Movement();
+        
         /*if (Input.GetMouseButtonDown(0))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -62,6 +70,14 @@ public class PlayerController : MonoBehaviour
                 agent.SetDestination(hit.point);
             }
         }*/
+        
+        //Debug
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            PlayerRoll();
+        }
+
+    //    debugTmp.text = "IsRolling = " + isRolling;
     }
 
     // Called with a btn in the UI
@@ -76,19 +92,26 @@ public class PlayerController : MonoBehaviour
     private IEnumerator RollCd()
     {
         yield return new WaitForSeconds(rollDuration);
+        StopRolling();
+    }
+
+    private void StopRolling()
+    {
         playerSpeed = initPlayerSeed;
         isRolling = false;
     }
 
-    void Ray()
+    private void Ray()
     {
-        Debug.DrawRay(transform.position, transform.forward * 2.5f, Color.red);
+        Debug.DrawRay(transform.position, transform.forward * 7, Color.red);
+        
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 2.5f))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 7f))
         {
-            if (hit.transform.GetComponent<IDamage>() != null && isCovered)
+            if (hit.transform.GetComponent<Enemy>() != null && isRolling)
             {
-                hit.transform.GetComponent<IDamage>().Damage(damage);
+                hit.transform.GetComponent<Enemy>().HitByRolling();
+                StopRolling();
             }
         }
     }
