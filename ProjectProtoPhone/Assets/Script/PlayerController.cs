@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     public bool isCovered;
+    public bool isUndercover;
     
     private CharacterController controller;
     private Vector3 playerVelocity;
@@ -103,15 +104,14 @@ public class PlayerController : MonoBehaviour
 
     private void Ray()
     {
-        Debug.DrawRay(transform.position, transform.forward * 7, Color.red);
+        Debug.DrawRay(transform.position, transform.forward * 2, Color.red);
         
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 7f))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
         {
-            if (hit.transform.GetComponent<Enemy>() != null && isRolling)
+            if (hit.transform.GetComponent<Enemy>() != null && isCovered)
             {
-                hit.transform.GetComponent<Enemy>().HitByRolling();
-                StopRolling();
+                hit.transform.GetComponent<Enemy>().GiveKey();
             }
         }
     }

@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 7780640086371560747}
   - component: {fileID: 6728364817328576946}
   - component: {fileID: 8148231274696423766}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -210,6 +210,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   state: 1
+  canGiveCard: 0
   baseState: 0
   life: 100
   bloodSheld: {fileID: 4220504813720496063, guid: a51f840e52789c84babf2892d0819e77,
@@ -224,6 +225,8 @@ MonoBehaviour:
   strees: 0
   stunDuration: 1
   coneVision: {fileID: 1211164031160869443}
+  _lineOfSight: {fileID: 0}
+  stressSlider: {fileID: 0}
 --- !u!65 &7673533674923134841
 BoxCollider:
   m_ObjectHideFlags: 0

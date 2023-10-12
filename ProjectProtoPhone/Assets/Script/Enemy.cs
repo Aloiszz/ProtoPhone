@@ -19,6 +19,8 @@ public class Enemy : MonoBehaviour, IDamage
     }
 
     public EnemyState state;
+    public bool canGiveCard;
+    private bool doOnce;
     [HideInInspector]public EnemyState baseState;
     
     [SerializeField] private float life = 100;
@@ -64,7 +66,7 @@ public class Enemy : MonoBehaviour, IDamage
     
     void Update()
     {
-        stressSlider.value = strees;
+        //stressSlider.value = strees;
         
         if (life <= 0)
         {
@@ -148,7 +150,17 @@ public class Enemy : MonoBehaviour, IDamage
         life -= damage;
     }
 
-    public void HitByRolling()
+    public void GiveKey()
+    {
+        if (canGiveCard && !doOnce)
+        {
+            GameObject blueCard = Instantiate(GameManager.instance.BlueCard, transform.position, Quaternion.identity);
+            blueCard.GetComponent<Cards>().enemy = GetComponent<Enemy>();
+            doOnce = true;
+        }
+    }
+
+    /*public void HitByRolling()
     {
         isStun = true;
         StartCoroutine(Push());
@@ -172,5 +184,5 @@ public class Enemy : MonoBehaviour, IDamage
        _lineOfSight.SetActive(true);
         coneVision.SetActive(true);
         isStun = false;
-    }
+    }*/
 }

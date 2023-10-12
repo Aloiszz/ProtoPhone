@@ -2,10 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Cards : MonoBehaviour
 {
-    [SerializeField] private Enemy _enemy;
+     public Enemy enemy;
     [SerializeField] private Transform[] waypoint;
 
     [SerializeField] private WaypointDrawLine WaypointDrawLine;
@@ -13,7 +14,7 @@ public class Cards : MonoBehaviour
     private bool isTriggered;
     void Start()
     {
-        waypoint = _enemy.waypoints;
+        waypoint = enemy.waypoints;
         WaypointDrawLine = waypoint[0].GetComponentInParent<WaypointDrawLine>();
         
     }
