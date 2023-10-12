@@ -1,10 +1,13 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class PlayerController : MonoBehaviour
 {
     public bool isCovered;
+    public bool isUndercover;
     
     private CharacterController controller;
     private Vector3 playerVelocity;
@@ -36,7 +39,10 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
     }
 
-    
+    private void Start()
+    {
+        isUndercover = false;
+    }
 
 
     void Update()

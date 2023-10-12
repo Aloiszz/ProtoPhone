@@ -58,12 +58,15 @@ public class LineOfSight : MonoBehaviour
     
     IEnumerator DetectPlayer()
     {
+        
         while ( true )
         {
             yield return new WaitForSeconds( detection_delay );
-
-            points = GetBoundingPoints( player_collider.bounds );
-
+            if (!PlayerController.instance.isUndercover)
+            {
+                points = GetBoundingPoints( player_collider.bounds );
+            }
+            
             int points_hidden = 0;
 
             foreach ( Vector3 point in points )
@@ -72,9 +75,8 @@ public class LineOfSight : MonoBehaviour
                 float target_distance = Vector3.Distance( this.transform.position, point );
                 float target_angle = Vector3.Angle( target_direction, this.transform.forward );
 
-                if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov )
+                if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
                     ++points_hidden;
-                
             }
 
             if (points_hidden >= points.Length)// player is hidden
@@ -93,9 +95,9 @@ public class LineOfSight : MonoBehaviour
                         _enemy.InteruptDestination();
                         _enemy.ReloadDestination();
                         break;
-                } // les ennemis revienne a leurs train train quotidien
+                } 
             }
-            
+        
             else// player is visible
             {
                 isHiden = false;
@@ -103,7 +105,7 @@ public class LineOfSight : MonoBehaviour
                 sideeys.color = new Color (1, 0, 0, .2f);
                 _enemy.state = Enemy.EnemyState.alert; // Les enemey sont alerté 
             }
-                
+            
         }
     }
 

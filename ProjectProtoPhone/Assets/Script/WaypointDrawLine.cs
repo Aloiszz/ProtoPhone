@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -15,15 +16,54 @@ public class WaypointDrawLine : MonoBehaviour
     private Color _colors;
 
     [SerializeField] List<Transform> waypoints;
+    [HideInInspector] public LineRenderer LineRenderer;
     void Start()
     {
+        LineRenderer = GetComponent<LineRenderer>();
         foreach (Transform i in GetComponentInChildren<Transform>())
         {
             waypoints.Add(i);
         }
     }
-    
-    #if UNITY_EDITOR
+
+    private void Update()
+    {
+    }
+
+    public void ShootRaycast()
+    {
+        for (int i = 0; i < waypoints.Count; i++)
+        {
+            if (i == waypoints.Count-1)
+            {
+                RaycastHit hit;
+                if (Physics.Linecast(waypoints[i].transform.position, waypoints[0].transform.position, out hit))
+                {
+                    hit.transform.GetComponent<PlayerController>().isUndercover = false;
+                    Debug.DrawLine(waypoints[i].transform.position, waypoints[0].transform.position, Color.red, 10);
+                    if (hit.transform.GetComponent<PlayerController>())
+                    {
+                        hit.transform.GetComponent<PlayerController>().isUndercover = true;
+                    }
+                }
+            }
+            else
+            {
+                RaycastHit hit;
+                if (Physics.Linecast(waypoints[i].transform.position, waypoints[i+1].transform.position, out hit))
+                {
+                    hit.transform.GetComponent<PlayerController>().isUndercover = false;
+                    Debug.DrawLine(waypoints[i].transform.position, waypoints[i+1].transform.position, Color.red, 10);
+                    if (hit.transform.GetComponent<PlayerController>())
+                    {
+                        hit.transform.GetComponent<PlayerController>().isUndercover = true;
+                    }
+                }
+            }
+        }
+    }
+
+#if UNITY_EDITOR
     void OnDrawGizmos()
     {
         switch (waypointsColor)
