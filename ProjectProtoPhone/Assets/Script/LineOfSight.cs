@@ -103,7 +103,7 @@ public class LineOfSight : MonoBehaviour
                 isHiden = false;
                 PlayerController.instance.isCovered = false;
                 sideeys.color = new Color (1, 0, 0, .2f);
-                _enemy.state = Enemy.EnemyState.alert; // Les enemey sont alerté 
+                _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
             }
             
         }
