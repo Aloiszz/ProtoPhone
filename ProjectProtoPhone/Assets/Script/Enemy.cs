@@ -3,14 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour, IDamage
 {
     public enum EnemyState
     {
         still,
-        patrol,
-        alert,
+        patrol, // Palier 0
+        alert1, // Palier 1
+        alert2, // Palier 2
+        alert3, // Palier 3
+        alert4, // Palier 4
+        alert5 // Palier 5
     }
 
     public EnemyState state;
@@ -35,6 +40,8 @@ public class Enemy : MonoBehaviour, IDamage
     [SerializeField] private float stunDuration;
     [SerializeField] private GameObject coneVision;
     [SerializeField] private GameObject _lineOfSight;
+    private bool isStun;
+    [SerializeField] private Slider stressSlider;
     
     
     void Start()
@@ -57,11 +64,15 @@ public class Enemy : MonoBehaviour, IDamage
     
     void Update()
     {
+        stressSlider.value = strees;
+        
         if (life <= 0)
         {
             Instantiate(bloodSheld, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
+
+        
         switch (state)
         {
             case EnemyState.still:
@@ -70,7 +81,7 @@ public class Enemy : MonoBehaviour, IDamage
             case EnemyState.patrol:
                 StatePatrol();
                 break;
-            case EnemyState.alert:
+            case EnemyState.alert1:
                 StateAlert();
                 break;
         }
@@ -139,6 +150,7 @@ public class Enemy : MonoBehaviour, IDamage
 
     public void HitByRolling()
     {
+        isStun = true;
         StartCoroutine(Push());
         StartCoroutine(Stun());
     }
@@ -159,5 +171,6 @@ public class Enemy : MonoBehaviour, IDamage
         yield return new WaitForSeconds(stunDuration);
        _lineOfSight.SetActive(true);
         coneVision.SetActive(true);
+        isStun = false;
     }
 }
