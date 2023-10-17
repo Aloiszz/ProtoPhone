@@ -12,10 +12,6 @@ public class Enemy : MonoBehaviour, IDamage
         still,
         patrol, // Palier 0
         alert1, // Palier 1
-        alert2, // Palier 2
-        alert3, // Palier 3
-        alert4, // Palier 4
-        alert5 // Palier 5
     }
 
     public EnemyState state;
@@ -36,14 +32,6 @@ public class Enemy : MonoBehaviour, IDamage
      private float lastfired; 
     [SerializeField] private GameObject Bullet;
     private Animator _animator;
-
-    [Range(0, 50)] public float strees;
-    private Rigidbody rb;
-    [SerializeField] private float stunDuration;
-    [SerializeField] private GameObject coneVision;
-    [SerializeField] private GameObject _lineOfSight;
-    private bool isStun;
-    [SerializeField] private Slider stressSlider;
     
     
     void Start()
@@ -51,7 +39,6 @@ public class Enemy : MonoBehaviour, IDamage
         baseState = state;
         _animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
-        rb = GetComponent<Rigidbody>();
 
         ReloadDestination();
     }
@@ -66,7 +53,6 @@ public class Enemy : MonoBehaviour, IDamage
     
     void Update()
     {
-        //stressSlider.value = strees;
         
         if (life <= 0)
         {
@@ -159,30 +145,4 @@ public class Enemy : MonoBehaviour, IDamage
             doOnce = true;
         }
     }
-
-    /*public void HitByRolling()
-    {
-        isStun = true;
-        StartCoroutine(Push());
-        StartCoroutine(Stun());
-    }
-
-    private IEnumerator Push()
-    {
-        PlayerController.instance.debugTmp.text = 0.ToString();
-        rb.AddForce(PlayerController.instance.transform.forward * PlayerController.instance.pushForce, ForceMode.Impulse);
-        yield return new WaitForSeconds(PlayerController.instance.pushDuration);
-        rb.velocity = Vector3.zero;
-    }
-
-    private IEnumerator Stun()
-    {
-        PlayerController.instance.debugTmp.text = 1.ToString();
-        coneVision.SetActive(false);
-        _lineOfSight.SetActive(false);
-        yield return new WaitForSeconds(stunDuration);
-       _lineOfSight.SetActive(true);
-        coneVision.SetActive(true);
-        isStun = false;
-    }*/
 }

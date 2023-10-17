@@ -97,10 +97,13 @@ public class LineOfSight : MonoBehaviour
     
             else// player is visible
             {
-                isHiden = false;
-                PlayerController.instance.isCovered = false;
-                sideeys.color = new Color (1, 0, 0, .2f);
-                _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
+                if (!PlayerController.instance.isUndercover)
+                {
+                    isHiden = false;
+                    PlayerController.instance.isCovered = false;
+                    sideeys.color = new Color (1, 0, 0, .2f);
+                    _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
+                }
             }
         
         }
