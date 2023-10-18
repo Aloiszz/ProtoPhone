@@ -47,7 +47,7 @@ public class LineOfSight : MonoBehaviour
 
     private void OnTriggerExit( Collider other )
     {
-        if ( other.tag == "Player" )
+        if ( other.tag == "Player")
         {
             target = null;
             //_enemy.ReloadDestination();
@@ -65,6 +65,7 @@ public class LineOfSight : MonoBehaviour
             points = GetBoundingPoints( player_collider.bounds );
         
             int points_hidden = 0;
+            int points_interacted = 0;
 
             foreach ( Vector3 point in points )
             {
@@ -74,6 +75,8 @@ public class LineOfSight : MonoBehaviour
 
                 if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
                     ++points_hidden;
+                if (IsPointInteracted(target_direction, target_distance) || target_angle > fov)
+                    ++points_interacted;
             }
 
             if (points_hidden >= points.Length)// player is hidden
@@ -94,7 +97,6 @@ public class LineOfSight : MonoBehaviour
                         break;
                 } 
             }
-    
             else// player is visible
             {
                 if (!PlayerController.instance.isUndercover)
@@ -104,6 +106,15 @@ public class LineOfSight : MonoBehaviour
                     sideeys.color = new Color (1, 0, 0, .2f);
                     _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
                 }
+            }
+
+            if (points_interacted >= points.Length)
+            {
+                Debug.Log("Je vois une boite ");
+            }
+            else
+            {
+                Debug.Log("Je ne vois rien !!! ");
             }
         
         }
@@ -122,13 +133,26 @@ public class LineOfSight : MonoBehaviour
                 if ( cover_distance < target_distance )
                     return true;
             }
-            
         }
-        
         return false;
     }
 
-    
+    private bool IsPointInteracted(Vector3 target_direction, float target_distance)
+    {
+        RaycastHit[] hits = Physics.RaycastAll( this.transform.position, target_direction, detection_collider.radius );
+        
+        foreach ( RaycastHit hit in hits )
+        {
+            Debug.DrawRay(this.transform.position, target_direction * detection_collider.radius, Color.yellow);
+            if (hit.transform.GetComponent<IInteractable>() != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private Vector3[] GetBoundingPoints( Bounds bounds )
     {
         Vector3[] bounding_points = 

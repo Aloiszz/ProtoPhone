@@ -77,8 +77,7 @@ public class PlayerController : MonoBehaviour
         {
             PlayerRoll();
         }
-
-    //    debugTmp.text = "IsRolling = " + isRolling;
+        
     }
 
     // Called with a btn in the UI
@@ -112,6 +111,11 @@ public class PlayerController : MonoBehaviour
             if (hit.transform.GetComponent<Enemy>() != null && isCovered)
             {
                 hit.transform.GetComponent<Enemy>().GiveKey();
+            }
+
+            if (hit.transform.GetComponent<IInteractable>() != null)
+            {
+                hit.transform.GetComponent<IInteractable>().Interact();
             }
         }
     }

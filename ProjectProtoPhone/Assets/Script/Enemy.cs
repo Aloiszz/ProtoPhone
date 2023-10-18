@@ -13,7 +13,7 @@ public class Enemy : MonoBehaviour, IDamage
         patrol, // Palier 0
         alert1, // Palier 1
     }
-
+    
     public EnemyState state;
     public bool canGiveCard;
     private bool doOnce;
