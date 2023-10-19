@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +25,11 @@ public class LineOfSight : MonoBehaviour
 
     public float fov = 70;
     private Vector3[] points;
-    
+
+    public List<GameObject> boxTarget;
+    public List<Collider> boxCollider;
+    public PointList ListOfPointLists = new PointList();
+
     private void Awake()
     {
         detection_collider = this.GetComponent<SphereCollider>();
@@ -37,11 +43,18 @@ public class LineOfSight : MonoBehaviour
 
     private void OnTriggerEnter( Collider other )
     {
-        if ( other.tag == "Player" )
+        if ( other.tag == "Player")
         {
             target = other.gameObject;
             detect_player = StartCoroutine( DetectPlayer() );
             player_collider = other;
+        }
+
+        if (other.tag == "Box")
+        {
+            boxTarget.Add(other.gameObject);
+            boxCollider.Add(other);
+            StartCoroutine( DetectBox() );
         }
     }
 
@@ -52,6 +65,13 @@ public class LineOfSight : MonoBehaviour
             target = null;
             //_enemy.ReloadDestination();
             StopCoroutine( detect_player );
+        }
+        
+        if (other.tag == "Box")
+        {
+            boxTarget.Remove(other.gameObject);
+            boxCollider.Remove(other);
+            StopCoroutine( DetectBox() );
         }
     }
 
@@ -65,7 +85,6 @@ public class LineOfSight : MonoBehaviour
             points = GetBoundingPoints( player_collider.bounds );
         
             int points_hidden = 0;
-            int points_interacted = 0;
 
             foreach ( Vector3 point in points )
             {
@@ -75,10 +94,7 @@ public class LineOfSight : MonoBehaviour
 
                 if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
                     ++points_hidden;
-                if (IsPointInteracted(target_direction, target_distance) || target_angle > fov)
-                    ++points_interacted;
             }
-
             if (points_hidden >= points.Length)// player is hidden
             {
                 isHiden = true;
@@ -107,25 +123,60 @@ public class LineOfSight : MonoBehaviour
                     _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
                 }
             }
-
-            if (points_interacted >= points.Length)
-            {
-                Debug.Log("Je vois une boite ");
-            }
-            else
-            {
-                Debug.Log("Je ne vois rien !!! ");
-            }
-        
         }
     }
 
+
+    IEnumerator DetectBox()
+    {
+        while ( true )
+        {
+            yield return new WaitForSeconds( detection_delay );
+
+            foreach (var collider in boxCollider)
+            {
+                if (ListOfPointLists.list.Count <= boxCollider.Count)
+                {
+                    ListOfPointLists.list.Add(new Point());
+                }
+                ListOfPointLists.list[boxCollider.IndexOf(collider)].name = collider.name;
+                ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints = GetBoundingPoints( collider.bounds);
+                
+                Debug.Log("Avant Points");
+                List<int> points_hidden = new List<int>();
+                Debug.Log("Apres points");
+                foreach (var points in points_hidden)
+                {
+                    foreach ( Vector3 point in ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints )
+                    {
+                        Vector3 target_direction = point - this.transform.position;
+                        float target_distance = Vector3.Distance( this.transform.position, point );
+                        float target_angle = Vector3.Angle( target_direction, this.transform.forward );
+
+                        if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
+                            ++points_hidden[points];
+                        Debug.Log(points_hidden[points]);
+                    }
+            
+                    if (points_hidden[points] >= ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints.Length)
+                    {
+                        foreach (var i in boxCollider)
+                        {
+                            Debug.Log("Je vois une boite " + i.transform.name);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     private bool IsPointCovered( Vector3 target_direction, float target_distance )
     {
         RaycastHit[] hits = Physics.RaycastAll( this.transform.position, target_direction, detection_collider.radius );
         
         foreach ( RaycastHit hit in hits )
         {
+            Debug.DrawRay(transform.position, target_direction, Color.red);
             if ( hit.transform.gameObject.layer == LayerMask.NameToLayer( "Cover" ) )
             {
                 float cover_distance = Vector3.Distance( this.transform.position, hit.point );  
@@ -136,23 +187,7 @@ public class LineOfSight : MonoBehaviour
         }
         return false;
     }
-
-    private bool IsPointInteracted(Vector3 target_direction, float target_distance)
-    {
-        RaycastHit[] hits = Physics.RaycastAll( this.transform.position, target_direction, detection_collider.radius );
-        
-        foreach ( RaycastHit hit in hits )
-        {
-            Debug.DrawRay(this.transform.position, target_direction * detection_collider.radius, Color.yellow);
-            if (hit.transform.GetComponent<IInteractable>() != null)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
+    
     private Vector3[] GetBoundingPoints( Bounds bounds )
     {
         Vector3[] bounding_points = 
@@ -184,10 +219,23 @@ public class LineOfSight : MonoBehaviour
         }
         
         Gizmos.DrawLineList(points);
+        
+        foreach (var collider in boxCollider)
+        {
+            Gizmos.DrawLineList(ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints);
+        }
 
         if (target != null)
         {
             Gizmos.DrawLine(transform.position, target.transform.position);
+        }
+
+        if (boxTarget.Count != null)
+        {
+            foreach (var box in boxTarget)
+            {
+                Gizmos.DrawLine(transform.position, box.transform.position);
+            }
         }
 
         if (Application.isPlaying)
@@ -204,5 +252,17 @@ public class LineOfSight : MonoBehaviour
         angleInDegrees += eulerY;
         return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
     }
-    
+}
+
+[System.Serializable]
+public class Point
+{
+    public string name;
+    public Vector3[] boxPoints;
+}
+ 
+[System.Serializable]
+public class PointList
+{
+    public List<Point> list;
 }
