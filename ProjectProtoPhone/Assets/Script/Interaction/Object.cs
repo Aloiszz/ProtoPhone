@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Object : MonoBehaviour
+public class ObjectInteractive : MonoBehaviour
 {
     public enum State
     {

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoxObject : Object
+public class BoxObject : ObjectInteractive
 {
     public bool isVisible;
     void Start()

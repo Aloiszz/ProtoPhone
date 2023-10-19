@@ -6,20 +6,20 @@ using UnityEngine;
 public class Box : MonoBehaviour, IInteractable
 {
     public bool isVisible;
-    public Object.State state;
+    public ObjectInteractive.State state;
     
     void Start()
     {
-        state = Object.State.Normal;
+        state = ObjectInteractive.State.Normal;
     }
     void Update()
     {
         switch (state)
         {
-            case Object.State.Normal: 
+            case ObjectInteractive.State.Normal: 
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,1,1,1) * 10f);
                 break;
-            case Object.State.Destoyed:
+            case ObjectInteractive.State.Destoyed:
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,0,0,1) * 10f);
                 break;
         }
@@ -27,7 +27,7 @@ public class Box : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        state = Object.State.Destoyed;
+        state = ObjectInteractive.State.Destoyed;
         Debug.Log("Je touche une " + transform.name + " elle est maintenant " + state);
     }
 
