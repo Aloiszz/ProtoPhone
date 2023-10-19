@@ -69,6 +69,7 @@ public class LineOfSight : MonoBehaviour
         
         if (other.tag == "Box")
         {
+            ListOfPointLists.list.RemoveAt(0);
             boxTarget.Remove(other.gameObject);
             boxCollider.Remove(other);
             StopCoroutine( DetectBox() );
@@ -142,28 +143,48 @@ public class LineOfSight : MonoBehaviour
                 ListOfPointLists.list[boxCollider.IndexOf(collider)].name = collider.name;
                 ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints = GetBoundingPoints( collider.bounds);
                 
-                Debug.Log("Avant Points");
-                List<int> points_hidden = new List<int>();
-                Debug.Log("Apres points");
-                foreach (var points in points_hidden)
+                foreach ( Vector3 point in ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints)
                 {
-                    foreach ( Vector3 point in ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints )
-                    {
-                        Vector3 target_direction = point - this.transform.position;
-                        float target_distance = Vector3.Distance( this.transform.position, point );
-                        float target_angle = Vector3.Angle( target_direction, this.transform.forward );
+                    Vector3 target_direction = point - this.transform.position;
+                    float target_distance = Vector3.Distance( this.transform.position, point );
+                    float target_angle = Vector3.Angle( target_direction, this.transform.forward );
 
-                        if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
-                            ++points_hidden[points];
-                        Debug.Log(points_hidden[points]);
-                    }
-            
-                    if (points_hidden[points] >= ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints.Length)
+                    if ( IsPointCovered( target_direction, target_distance ) || target_angle > fov)
+                        ++ListOfPointLists.list[boxCollider.IndexOf(collider)].pointHiden;
+                    
+                }
+        
+                if (ListOfPointLists.list[boxCollider.IndexOf(collider)].pointHiden >= ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints.Length)
+                {
+                    isHiden = true;
+                    foreach (var i in boxCollider)
                     {
-                        foreach (var i in boxCollider)
+                        Debug.Log("Je ne vois pas la boite " + i.transform.name);
+                        i.GetComponent<IInteractable>().IsVisible(false);
+                    }
+                }
+                else
+                {
+                    isHiden = false;
+                    foreach (var i in boxCollider)
+                    {
+                        Debug.Log("Je vois la boite " + i.transform.name);
+                        i.GetComponent<IInteractable>().IsVisible(true);
+                    }
+                    foreach (var i in boxTarget)
+                    {
+                        /*switch (i.GetComponent<Object>().state)
                         {
-                            Debug.Log("Je vois une boite " + i.transform.name);
-                        }
+                            case Object.State.Normal:
+                                break;
+                            case Object.State.Destoyed:
+                                _enemy.state = Enemy.EnemyState.alert1;
+                                break;
+                            case Object.State.Trapped:
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }*/
                     }
                 }
             }
@@ -259,6 +280,7 @@ public class Point
 {
     public string name;
     public Vector3[] boxPoints;
+    public int pointHiden;
 }
  
 [System.Serializable]

@@ -1,31 +1,25 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Box : MonoBehaviour, IInteractable
 {
-    public enum BoxState
-    {
-        Normal,
-        Destoyed,
-        Trapped
-    }
+    public bool isVisible;
+    public Object.State state;
     
-    public BoxState state;
     void Start()
     {
-        state = BoxState.Normal;
+        state = Object.State.Normal;
     }
-
-    // Update is called once per frame
     void Update()
     {
         switch (state)
         {
-            case BoxState.Normal: 
+            case Object.State.Normal: 
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,1,1,1) * 10f);
                 break;
-            case BoxState.Destoyed:
+            case Object.State.Destoyed:
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,0,0,1) * 10f);
                 break;
         }
@@ -33,7 +27,12 @@ public class Box : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        state = BoxState.Destoyed;
+        state = Object.State.Destoyed;
         Debug.Log("Je touche une " + transform.name + " elle est maintenant " + state);
+    }
+
+    public void IsVisible(bool isVisible)
+    {
+        this.isVisible = isVisible;
     }
 }
