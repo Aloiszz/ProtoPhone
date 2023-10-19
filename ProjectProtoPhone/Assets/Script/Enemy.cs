@@ -12,6 +12,7 @@ public class Enemy : MonoBehaviour, IDamage
         still,
         patrol, // Palier 0
         alert1, // Palier 1
+        checkObject
     }
     
     public EnemyState state;
@@ -32,7 +33,10 @@ public class Enemy : MonoBehaviour, IDamage
      private float lastfired; 
     [SerializeField] private GameObject Bullet;
     private Animator _animator;
-    
+
+    [Header("Object interaction")] 
+    [SerializeField] private float distObjectInteraction = 1;
+    [HideInInspector] public GameObject ObjectToLookAt;
     
     void Start()
     {
@@ -59,7 +63,6 @@ public class Enemy : MonoBehaviour, IDamage
             Instantiate(bloodSheld, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
-
         
         switch (state)
         {
@@ -72,6 +75,9 @@ public class Enemy : MonoBehaviour, IDamage
             case EnemyState.alert1:
                 StateAlert();
                 break;
+            case EnemyState.checkObject:
+                CheckObject();
+                break;
         }
     }
 
@@ -81,6 +87,9 @@ public class Enemy : MonoBehaviour, IDamage
         ReloadDestination();
         _animator.enabled = true;
     }
+
+    
+    #region Patrol
 
     void StatePatrol()
     {
@@ -111,8 +120,10 @@ public class Enemy : MonoBehaviour, IDamage
     {
         agent.ResetPath();
     }
-    
 
+    #endregion
+    
+    
     void StateAlert()
     {
         _animator.enabled = false;
@@ -130,7 +141,31 @@ public class Enemy : MonoBehaviour, IDamage
             rbBullet.AddForce((PlayerController.instance.transform.position - transform.position).normalized * 50, ForceMode.Impulse);
         }
     }
+    
 
+    void CheckObject()
+    {
+        Debug.Log("Oh tient une caisse est détruite");
+        InteruptDestination();
+        if(Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >= distObjectInteraction)
+        {
+            agent.SetDestination(ObjectToLookAt.transform.position); // se dirige vers la position de l'object
+        }
+        
+        transform.LookAt(ObjectToLookAt.transform); // regarde l'object
+        StartCoroutine(waitForCheckObject());
+    }
+
+    IEnumerator waitForCheckObject()
+    {
+        yield return new WaitForSeconds(5);
+        ObjectToLookAt = null;
+        state = EnemyState.patrol;
+        ReloadDestination();
+    }
+    
+    
+    
     public void Damage(float damage)
     {
         life -= damage;

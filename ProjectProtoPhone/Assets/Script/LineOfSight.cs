@@ -173,18 +173,19 @@ public class LineOfSight : MonoBehaviour
                     }
                     foreach (var i in boxTarget)
                     {
-                        /*switch (i.GetComponent<Object>().state)
+                        switch (i.GetComponent<ObjectInteractive>().state)
                         {
-                            case Object.State.Normal:
+                            case ObjectInteractive.State.Normal:
                                 break;
-                            case Object.State.Destoyed:
-                                _enemy.state = Enemy.EnemyState.alert1;
+                            case ObjectInteractive.State.Destoyed:
+                                _enemy.state = Enemy.EnemyState.checkObject;
+                                _enemy.ObjectToLookAt = i;
                                 break;
-                            case Object.State.Trapped:
+                            case ObjectInteractive.State.Trapped:
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
-                        }*/
+                        }
                     }
                 }
             }
