@@ -55,6 +55,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     { 
         initPlayerSeed = playerSpeed;
+        isCovered = true;
     }
 
     void Update()
@@ -113,7 +114,7 @@ public class PlayerController : MonoBehaviour
                 hit.transform.GetComponent<Enemy>().GiveKey();
             }
 
-            if (hit.transform.GetComponent<IInteractable>() != null)
+            if (hit.transform.GetComponent<IInteractable>() != null && isRolling)
             {
                 hit.transform.GetComponent<IInteractable>().Interact();
             }

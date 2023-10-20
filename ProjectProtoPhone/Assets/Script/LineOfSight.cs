@@ -69,7 +69,14 @@ public class LineOfSight : MonoBehaviour
         
         if (other.tag == "Box")
         {
-            ListOfPointLists.list.RemoveAt(0);
+            //ListOfPointLists.list.RemoveAt(0);
+            foreach (var collider in boxCollider)
+            {
+                if (ListOfPointLists.list[boxCollider.IndexOf(collider)].name == other.name)
+                {
+                    ListOfPointLists.list.RemoveAt(boxCollider.IndexOf(collider));
+                } 
+            }
             boxTarget.Remove(other.gameObject);
             boxCollider.Remove(other);
             StopCoroutine( DetectBox() );
@@ -130,7 +137,7 @@ public class LineOfSight : MonoBehaviour
 
     IEnumerator DetectBox()
     {
-        while ( true )
+        while ( true)
         {
             yield return new WaitForSeconds( detection_delay );
 
@@ -178,8 +185,16 @@ public class LineOfSight : MonoBehaviour
                             case ObjectInteractive.State.Normal:
                                 break;
                             case ObjectInteractive.State.Destoyed:
-                                _enemy.state = Enemy.EnemyState.checkObject;
-                                _enemy.ObjectToLookAt = i;
+                                if (!PlayerController.instance.isCovered)
+                                {
+                                    _enemy.state = Enemy.EnemyState.alert1;
+                                }
+                                else
+                                {
+                                    sideeys.color = new Color (1, .5f, 0, .2f);
+                                    _enemy.state = Enemy.EnemyState.checkObject;
+                                    _enemy.ObjectToLookAt = i;
+                                }
                                 break;
                             case ObjectInteractive.State.Trapped:
                                 break;

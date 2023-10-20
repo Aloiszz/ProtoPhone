@@ -36,7 +36,7 @@ public class Enemy : MonoBehaviour, IDamage
 
     [Header("Object interaction")] 
     [SerializeField] private float distObjectInteraction = 1;
-    [HideInInspector] public GameObject ObjectToLookAt;
+     public GameObject ObjectToLookAt;
     
     void Start()
     {
@@ -147,12 +147,11 @@ public class Enemy : MonoBehaviour, IDamage
     {
         Debug.Log("Oh tient une caisse est détruite");
         InteruptDestination();
-        if(Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >= distObjectInteraction)
+        if(Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >= distObjectInteraction) //Distance a garder entre l'object et l'enemy
         {
             agent.SetDestination(ObjectToLookAt.transform.position); // se dirige vers la position de l'object
+            transform.LookAt(ObjectToLookAt.transform); // regarde l'object
         }
-        
-        transform.LookAt(ObjectToLookAt.transform); // regarde l'object
         StartCoroutine(waitForCheckObject());
     }
 
@@ -162,8 +161,8 @@ public class Enemy : MonoBehaviour, IDamage
         ObjectToLookAt = null;
         state = EnemyState.patrol;
         ReloadDestination();
+        ObjectToLookAt = null;
     }
-    
     
     
     public void Damage(float damage)
