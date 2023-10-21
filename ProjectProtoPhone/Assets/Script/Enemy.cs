@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour, IDamage
@@ -37,12 +39,19 @@ public class Enemy : MonoBehaviour, IDamage
     [Header("Object interaction")] 
     [SerializeField] private float distObjectInteraction = 1;
      public GameObject ObjectToLookAt;
+
+     [Header("Canvas")] 
+     public TextMeshProUGUI txtDialogue;
+     public TextMeshProUGUI txtStressLevel;
+     [HideInInspector] public int indexStressLevel;
     
     void Start()
     {
         baseState = state;
         _animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
+        
+        txtStressLevel.text = "" + indexStressLevel;
 
         ReloadDestination();
     }
@@ -79,6 +88,7 @@ public class Enemy : MonoBehaviour, IDamage
                 CheckObject();
                 break;
         }
+        txtStressLevel.text = "" + indexStressLevel;
     }
 
 
@@ -126,6 +136,7 @@ public class Enemy : MonoBehaviour, IDamage
     
     void StateAlert()
     {
+        txtDialogue.text = "EH TOI LA !";
         _animator.enabled = false;
         agent.SetDestination(PlayerController.instance.transform.position);
         Shoot();
@@ -146,18 +157,23 @@ public class Enemy : MonoBehaviour, IDamage
     void CheckObject()
     {
         Debug.Log("Oh tient une caisse est détruite");
+        txtDialogue.text = "Une " + ObjectToLookAt.name + " détruites ?";
         InteruptDestination();
         if(Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >= distObjectInteraction) //Distance a garder entre l'object et l'enemy
         {
             agent.SetDestination(ObjectToLookAt.transform.position); // se dirige vers la position de l'object
             transform.LookAt(ObjectToLookAt.transform); // regarde l'object
+            txtDialogue.text = "??";
         }
+        
         StartCoroutine(waitForCheckObject());
     }
 
     IEnumerator waitForCheckObject()
     {
+        ObjectToLookAt.GetComponent<ObjectInteractive>().isInspected = true;
         yield return new WaitForSeconds(5);
+        txtDialogue.text = "...";
         ObjectToLookAt = null;
         state = EnemyState.patrol;
         ReloadDestination();

@@ -19,7 +19,7 @@ public class Box : MonoBehaviour, IInteractable
             case ObjectInteractive.State.Normal: 
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,1,1,1) * 10f);
                 break;
-            case ObjectInteractive.State.Destoyed:
+            case ObjectInteractive.State.Destroyed:
                 transform.GetComponent<Renderer>().material.SetColor ("_EmissionColor", new Color(1,0,0,1) * 10f);
                 break;
         }
@@ -27,7 +27,7 @@ public class Box : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        state = ObjectInteractive.State.Destoyed;
+        state = ObjectInteractive.State.Destroyed;
         Debug.Log("Je touche une " + transform.name + " elle est maintenant " + state);
     }
 

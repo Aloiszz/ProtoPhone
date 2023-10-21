@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -74,7 +75,7 @@ public class PlayerController : MonoBehaviour
         }*/
         
         //Debug
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             PlayerRoll();
         }
@@ -109,7 +110,7 @@ public class PlayerController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
         {
-            if (hit.transform.GetComponent<Enemy>() != null && isCovered)
+            if (hit.transform.GetComponent<Enemy>() != null && isCovered && isRolling)
             {
                 hit.transform.GetComponent<Enemy>().GiveKey();
             }

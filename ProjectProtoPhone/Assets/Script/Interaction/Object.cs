@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class ObjectInteractive : MonoBehaviour
 {
+
+    public bool isInspected;// une fois inspecter la boite n'a plus besoin d'etre checker
     public enum State
     {
         Normal,
-        Destoyed,
+        Destroyed,
         Trapped
     }
     public State state;
