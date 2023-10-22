@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
@@ -15,15 +16,16 @@ public class Enemy : MonoBehaviour, IDamage
         still,
         patrol, // Palier 0
         Search,
+        Suspiscious,
         alert1, // Palier 1
         checkObject
     }
-    
+
     public EnemyState state;
     public bool canGiveCard;
     private bool doOnce;
-    [HideInInspector]public EnemyState baseState;
-    
+    [HideInInspector] public EnemyState baseState;
+
     [SerializeField] private float life = 100;
     [SerializeField] private GameObject bloodSheld;
 
@@ -33,34 +35,34 @@ public class Enemy : MonoBehaviour, IDamage
     private Vector3 target;
 
 
-    [SerializeField] private float FireRate  = 10;  // The number of bullets fired per second
-     private float lastfired; 
+    [SerializeField] private float FireRate = 10; // The number of bullets fired per second
+    private float lastfired;
     [SerializeField] private GameObject Bullet;
     private Animator _animator;
 
-    [Header("Object interaction")] 
-    [SerializeField] private float distObjectInteraction = 1;
-     public GameObject ObjectToLookAt;
+    [Header("Object interaction")] [SerializeField]
+    private float distObjectInteraction = 1;
 
-     [Header("Canvas")] 
-     public TextMeshProUGUI txtDialogue;
-     public TextMeshProUGUI txtStressLevel;
-     [HideInInspector] public int indexStressLevel;
-     
-     [Space] 
-     public Image SuspisionSetBar;
-     [SerializeField] private float fillSpeed;
-     [SerializeField] private float alertDur;
+    public GameObject ObjectToLookAt;
 
-     void Start()
+    [Header("Canvas")] public TextMeshProUGUI txtDialogue;
+    public TextMeshProUGUI txtStressLevel;
+    [HideInInspector] public int indexStressLevel;
+
+    [Space] public Image SuspisionSetBar;
+    [SerializeField] private float fillSpeed;
+    [SerializeField] private float alertDur;
+
+    void Start()
     {
         baseState = state;
         _animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
-        
+
         txtStressLevel.text = "" + indexStressLevel;
 
         ReloadDestination();
+        AddStress(0);
     }
 
     public void ReloadDestination()
@@ -70,16 +72,15 @@ public class Enemy : MonoBehaviour, IDamage
             Destination();
         }
     }
-    
+
     void Update()
     {
-        
         if (life <= 0)
         {
             Instantiate(bloodSheld, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
-        
+
         switch (state)
         {
             case EnemyState.still:
@@ -97,18 +98,18 @@ public class Enemy : MonoBehaviour, IDamage
             case EnemyState.Search:
                 Search();
                 break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            case EnemyState.Suspiscious:
+                Suspiscious();
+                break;
+            
         }
-        txtStressLevel.text = "" + indexStressLevel;
 
         Suspiscion();
-        AddStress(); 
     }
 
     private void Suspiscion() // Gestion de la suspiscion d'une unité
     {
-        if (!PlayerController.instance.isCovered)
+        if (!GetComponentInChildren<LineOfSight>().isHiden)
         {
             SuspisionSetBar.fillAmount += fillSpeed * Time.deltaTime;
         }
@@ -122,11 +123,15 @@ public class Enemy : MonoBehaviour, IDamage
             case > .75f: // supérieur
                 SuspisionSetBar.color = new Color(1, 0, 0);
                 break;
-            
+
             case < .75f:
-                SuspisionSetBar.color = new Color(1,.64f,0);
+                SuspisionSetBar.color = new Color(1, .64f, 0);
                 break;
         }
+    }
+    private void Suspiscious()
+    {
+        txtDialogue.text = "Qui va la ??";
     }
 
 
@@ -136,21 +141,25 @@ public class Enemy : MonoBehaviour, IDamage
         _animator.enabled = true;
     }
 
-    void AddStress() // Gestion du stress de l'unité
+    
+    public void AddStress(int indexStressLevel) // Gestion du stress de l'unité
     {
-        switch (indexStressLevel)
+        switch (this.indexStressLevel)
         {
-            case 0 :
-                state = baseState;
+            case 0:
+                //state = baseState;
+                txtStressLevel.text = "Palier " + this.indexStressLevel;
                 break;
             case 1:
+                txtStressLevel.text = "Palier " + this.indexStressLevel;
                 break;
             case 2:
+                txtStressLevel.text = "Palier " + this.indexStressLevel;
                 break;
         }
     }
 
-    
+
     #region Patrol
 
     void StatePatrol()
@@ -162,7 +171,7 @@ public class Enemy : MonoBehaviour, IDamage
             Destination();
         }
     }
-    
+
     void Destination() // se rend a la prochaine localisation de sa patrouille
     {
         target = waypoints[waypointIndex].position;
@@ -178,14 +187,14 @@ public class Enemy : MonoBehaviour, IDamage
         }
     }
 
-    public void InteruptDestination() 
+    public void InteruptDestination()
     {
         agent.ResetPath();
     }
 
     #endregion
-    
-    
+
+
     void StateAlert()
     {
         txtDialogue.text = "EH TOI LA !";
@@ -201,39 +210,48 @@ public class Enemy : MonoBehaviour, IDamage
             lastfired = Time.time;
             GameObject bullet = Instantiate(Bullet, transform.position, Quaternion.identity);
             Rigidbody rbBullet = bullet.GetComponent<Rigidbody>();
-            rbBullet.AddForce((PlayerController.instance.transform.position - transform.position).normalized * 50, ForceMode.Impulse);
+            rbBullet.AddForce((PlayerController.instance.transform.position - transform.position).normalized * 50,
+                ForceMode.Impulse);
         }
     }
 
 
     void Search()
     {
-        InteruptDestination();
+        txtDialogue.text = "Ou est t'il ??";
     }
+
     public void LetsCheckLastSeenPos(Vector3 lastPos)
     {
         //InteruptDestination();
-        Debug.Log(lastPos);
-        if ( (Vector3.Distance(transform.position, lastPos) < 1)) // reload the patrol
+        if ((Vector3.Distance(transform.position, lastPos) < 1)) // reload the patrol
         {
             agent.SetDestination(lastPos);
             Debug.Log("ici");
-            //state = EnemyState.patrol;
+            StartCoroutine(CheckAroundUnit());
         }
     }
 
+    IEnumerator CheckAroundUnit()
+    {
+        state = EnemyState.still;
+        yield return new WaitForSeconds(3);
+        state = EnemyState.patrol;
+    }
+    
     void CheckObject()
     {
         Debug.Log("Oh tient une caisse est détruite");
         txtDialogue.text = "Une " + ObjectToLookAt.name + " détruites ?";
         InteruptDestination();
-        if(Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >= distObjectInteraction) //Distance a garder entre l'object et l'enemy
+        if (Vector3.Distance(ObjectToLookAt.transform.position, transform.position) >=
+            distObjectInteraction) //Distance a garder entre l'object et l'enemy
         {
             agent.SetDestination(ObjectToLookAt.transform.position); // se dirige vers la position de l'object
             transform.LookAt(ObjectToLookAt.transform); // regarde l'object
             txtDialogue.text = "??";
         }
-        
+
         StartCoroutine(waitForCheckObject());
     }
 
@@ -247,8 +265,8 @@ public class Enemy : MonoBehaviour, IDamage
         ReloadDestination();
         ObjectToLookAt = null;
     }
-    
-    
+
+
     public void Damage(float damage)
     {
         life -= damage;
@@ -264,3 +282,4 @@ public class Enemy : MonoBehaviour, IDamage
         }
     }
 }
+

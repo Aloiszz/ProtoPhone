@@ -66,6 +66,7 @@ public class LineOfSight : MonoBehaviour
             target = null;
             //_enemy.ReloadDestination();
             StopCoroutine(detect_player);
+            isHiden = true;
         }
 
         if (other.tag == "Box")
@@ -128,12 +129,14 @@ public class LineOfSight : MonoBehaviour
                             _enemy.state = Enemy.EnemyState.patrol;
                             _enemy.InteruptDestination();
                             _enemy.ReloadDestination();
-                            
                         }*/
                         if (canCheckLastPos)
                         {
+                            canCheckLastPos = false;
                             _enemy.state = Enemy.EnemyState.Search;
+                            value = points[0];
                         }
+                        _enemy.LetsCheckLastSeenPos(value);
                         break;
                     
                     case Enemy.EnemyState.alert1:
@@ -150,12 +153,14 @@ public class LineOfSight : MonoBehaviour
                     isHiden = false;
                     PlayerController.instance.isCovered = false;
                     sideeys.color = new Color(1, .5f, 0, .2f);
+                    _enemy.state = Enemy.EnemyState.Suspiscious;
 
                     if (_enemy.SuspisionSetBar.fillAmount == 1)
                     {
                         sideeys.color = new Color(1, 0, 0, .2f);
                         _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
                         canCheckLastPos = true;
+                        _enemy.AddStress(1);
                     }
                 }
             }
@@ -217,7 +222,8 @@ public class LineOfSight : MonoBehaviour
 
                             case ObjectInteractive.State.Destroyed:
                                 sideeys.color = new Color(1, .5f, 0, .2f);
-                                _enemy.indexStressLevel++;
+                                _enemy.AddStress(1);
+                                
                                 if (!i.GetComponent<ObjectInteractive>()
                                         .isInspected) // si l'object n'est pas encore inspecté
                                 {
