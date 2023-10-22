@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -13,6 +14,7 @@ public class Enemy : MonoBehaviour, IDamage
     {
         still,
         patrol, // Palier 0
+        Search,
         alert1, // Palier 1
         checkObject
     }
@@ -44,8 +46,13 @@ public class Enemy : MonoBehaviour, IDamage
      public TextMeshProUGUI txtDialogue;
      public TextMeshProUGUI txtStressLevel;
      [HideInInspector] public int indexStressLevel;
-    
-    void Start()
+     
+     [Space] 
+     public Image SuspisionSetBar;
+     [SerializeField] private float fillSpeed;
+     [SerializeField] private float alertDur;
+
+     void Start()
     {
         baseState = state;
         _animator = GetComponent<Animator>();
@@ -87,8 +94,39 @@ public class Enemy : MonoBehaviour, IDamage
             case EnemyState.checkObject:
                 CheckObject();
                 break;
+            case EnemyState.Search:
+                Search();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
         txtStressLevel.text = "" + indexStressLevel;
+
+        Suspiscion();
+        AddStress(); 
+    }
+
+    private void Suspiscion() // Gestion de la suspiscion d'une unité
+    {
+        if (!PlayerController.instance.isCovered)
+        {
+            SuspisionSetBar.fillAmount += fillSpeed * Time.deltaTime;
+        }
+        else
+        {
+            SuspisionSetBar.fillAmount -= alertDur * Time.deltaTime;
+        }
+
+        switch (SuspisionSetBar.fillAmount)
+        {
+            case > .75f: // supérieur
+                SuspisionSetBar.color = new Color(1, 0, 0);
+                break;
+            
+            case < .75f:
+                SuspisionSetBar.color = new Color(1,.64f,0);
+                break;
+        }
     }
 
 
@@ -96,6 +134,20 @@ public class Enemy : MonoBehaviour, IDamage
     {
         ReloadDestination();
         _animator.enabled = true;
+    }
+
+    void AddStress() // Gestion du stress de l'unité
+    {
+        switch (indexStressLevel)
+        {
+            case 0 :
+                state = baseState;
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+        }
     }
 
     
@@ -111,7 +163,7 @@ public class Enemy : MonoBehaviour, IDamage
         }
     }
     
-    void Destination()
+    void Destination() // se rend a la prochaine localisation de sa patrouille
     {
         target = waypoints[waypointIndex].position;
         agent.SetDestination(target);
@@ -126,7 +178,7 @@ public class Enemy : MonoBehaviour, IDamage
         }
     }
 
-    public void InteruptDestination()
+    public void InteruptDestination() 
     {
         agent.ResetPath();
     }
@@ -152,7 +204,23 @@ public class Enemy : MonoBehaviour, IDamage
             rbBullet.AddForce((PlayerController.instance.transform.position - transform.position).normalized * 50, ForceMode.Impulse);
         }
     }
-    
+
+
+    void Search()
+    {
+        InteruptDestination();
+    }
+    public void LetsCheckLastSeenPos(Vector3 lastPos)
+    {
+        //InteruptDestination();
+        Debug.Log(lastPos);
+        if ( (Vector3.Distance(transform.position, lastPos) < 1)) // reload the patrol
+        {
+            agent.SetDestination(lastPos);
+            Debug.Log("ici");
+            //state = EnemyState.patrol;
+        }
+    }
 
     void CheckObject()
     {

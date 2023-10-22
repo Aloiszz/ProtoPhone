@@ -24,6 +24,9 @@ public class LineOfSight : MonoBehaviour
     public float fov = 70;
     private Vector3[] points;
 
+    private bool canCheckLastPos;
+    Vector3 value;
+    
     [Header("Object interaction")] public List<GameObject> boxTarget;
     public List<Collider> boxCollider;
     public PointList ListOfPointLists = new PointList();
@@ -83,7 +86,6 @@ public class LineOfSight : MonoBehaviour
         }
     }
 
-
     IEnumerator DetectPlayer()
     {
         while (true)
@@ -108,21 +110,36 @@ public class LineOfSight : MonoBehaviour
             {
                 isHiden = true;
                 PlayerController.instance.isCovered = true;
-                sideeys.color = new Color(1, 1, 1, .2f);
+                //sideeys.color = new Color(1, 1, 1, .2f);
 
                 switch (_enemyBaseState)
                 {
                     case Enemy.EnemyState.still:
-                        _enemy.state = Enemy.EnemyState.still;
-                        break;
-                    case Enemy.EnemyState.patrol:
                         if (_enemy.state != Enemy.EnemyState.checkObject)
+                        {
+                            _enemy.state = Enemy.EnemyState.still;
+                        }
+
+                        break;
+                    
+                    case Enemy.EnemyState.patrol:
+                        /*if (_enemy.state != Enemy.EnemyState.checkObject)
                         {
                             _enemy.state = Enemy.EnemyState.patrol;
                             _enemy.InteruptDestination();
                             _enemy.ReloadDestination();
+                            
+                        }*/
+                        if (canCheckLastPos)
+                        {
+                            _enemy.state = Enemy.EnemyState.Search;
                         }
-
+                        break;
+                    
+                    case Enemy.EnemyState.alert1:
+                        break;
+                    
+                    case Enemy.EnemyState.checkObject:
                         break;
                 }
             }
@@ -132,8 +149,14 @@ public class LineOfSight : MonoBehaviour
                 {
                     isHiden = false;
                     PlayerController.instance.isCovered = false;
-                    sideeys.color = new Color(1, 0, 0, .2f);
-                    _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
+                    sideeys.color = new Color(1, .5f, 0, .2f);
+
+                    if (_enemy.SuspisionSetBar.fillAmount == 1)
+                    {
+                        sideeys.color = new Color(1, 0, 0, .2f);
+                        _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
+                        canCheckLastPos = true;
+                    }
                 }
             }
         }
@@ -166,23 +189,22 @@ public class LineOfSight : MonoBehaviour
                         ++ListOfPointLists.list[boxCollider.IndexOf(collider)].pointHiden;
                 }
 
-                if (ListOfPointLists.list[boxCollider.IndexOf(collider)].pointHiden >= ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints.Length)
+                if (ListOfPointLists.list[boxCollider.IndexOf(collider)].pointHiden >=
+                    ListOfPointLists.list[boxCollider.IndexOf(collider)].boxPoints.Length)
                 {
-                    //isHiden = true;
                     ListOfPointLists.list[boxCollider.IndexOf(collider)].isObjectHidden = true;
                     foreach (var i in boxCollider) // Set this object not visible to the enemy
                     {
-                        Debug.Log("Je ne vois pas la boite " + i.transform.name);
+                        //Debug.Log("Je ne vois pas la boite " + i.transform.name);
                         i.GetComponent<IInteractable>().IsVisible(false);
                     }
                 }
                 else
                 {
-                    //isHiden = false;
                     ListOfPointLists.list[boxCollider.IndexOf(collider)].isObjectHidden = false;
                     foreach (var i in boxCollider) // Set this object visible by the enemy
                     {
-                        Debug.Log("Je vois la boite " + i.transform.name);
+                        //Debug.Log("Je vois la boite " + i.transform.name);
                         i.GetComponent<IInteractable>().IsVisible(true);
                     }
 
@@ -287,11 +309,10 @@ public class LineOfSight : MonoBehaviour
         {
             foreach (var boxCollider in boxTarget)
             {
-                
                 if (ListOfPointLists.list[boxTarget.IndexOf(boxCollider)].isObjectHidden)
                     Gizmos.color = Color.blue;
                 else Gizmos.color = Color.red;
-                
+
                 Gizmos.DrawLine(transform.position, boxCollider.transform.position);
             }
         }
