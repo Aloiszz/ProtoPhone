@@ -111,7 +111,6 @@ public class LineOfSight : MonoBehaviour
             {
                 isHiden = true;
                 PlayerController.instance.isCovered = true;
-                //sideeys.color = new Color(1, 1, 1, .2f);
 
                 switch (_enemyBaseState)
                 {
@@ -152,12 +151,10 @@ public class LineOfSight : MonoBehaviour
                 {
                     isHiden = false;
                     PlayerController.instance.isCovered = false;
-                    sideeys.color = new Color(1, .5f, 0, .2f);
                     _enemy.state = Enemy.EnemyState.Suspiscious;
 
                     if (_enemy.SuspisionSetBar.fillAmount == 1)
                     {
-                        sideeys.color = new Color(1, 0, 0, .2f);
                         _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
                         canCheckLastPos = true;
                     }
@@ -175,7 +172,7 @@ public class LineOfSight : MonoBehaviour
 
             foreach (var collider in boxCollider)
             {
-                if (ListOfPointLists.list.Count <= boxCollider.Count)
+                if (ListOfPointLists.list.Count < boxCollider.Count)
                 {
                     ListOfPointLists.list.Add(new Point());
                 }
@@ -220,7 +217,11 @@ public class LineOfSight : MonoBehaviour
                                 break;
 
                             case ObjectInteractive.State.Destroyed:
-                                sideeys.color = new Color(1, .5f, 0, .2f);
+                                if (!ListOfPointLists.list[boxCollider.IndexOf(collider)].hasAddStress)
+                                {
+                                    ListOfPointLists.list[boxCollider.IndexOf(collider)].hasAddStress = true;
+                                    _enemy.AddStress();
+                                }
                                 
                                 if (!i.GetComponent<ObjectInteractive>()
                                         .isInspected) // si l'object n'est pas encore inspecté
@@ -349,6 +350,7 @@ public class Point
     public Vector3[] boxPoints;
     public int pointHiden;
     public bool isObjectHidden;
+    public bool hasAddStress;
 }
 
 [System.Serializable]

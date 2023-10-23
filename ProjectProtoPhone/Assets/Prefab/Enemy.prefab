@@ -285,8 +285,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   state: 1
-  canGiveCard: 0
   baseState: 0
+  stress: 0
+  normalSpeed: 3.5
+  panicSpeed: 6
+  canGiveCard: 0
   life: 100
   bloodSheld: {fileID: 4220504813720496063, guid: a51f840e52789c84babf2892d0819e77,
     type: 3}

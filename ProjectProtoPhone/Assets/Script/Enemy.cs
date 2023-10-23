@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour, IDamage
         checkObject
     }
     public EnemyState state;
+    [HideInInspector] public EnemyState baseState;
     
     public enum EnemyStress
     {
@@ -32,9 +33,14 @@ public class Enemy : MonoBehaviour, IDamage
 
     public EnemyStress stress;
     
+    [Header("Speed")] 
+    [SerializeField] private float normalSpeed;
+    [SerializeField] private float panicSpeed;
+
+    [Space]
+    
     public bool canGiveCard;
     private bool doOnce;
-    [HideInInspector] public EnemyState baseState;
 
     [SerializeField] private float life = 100;
     [SerializeField] private GameObject bloodSheld;
@@ -63,11 +69,14 @@ public class Enemy : MonoBehaviour, IDamage
     [SerializeField] private float fillSpeed;
     [SerializeField] private float alertDur;
 
+    private LineOfSight _lineOfSight;
+
     void Start()
     {
         baseState = state;
         _animator = GetComponent<Animator>();
         agent = GetComponent<NavMeshAgent>();
+        _lineOfSight = GetComponentInChildren<LineOfSight>();
 
         txtStressLevel.text = "" + indexStressLevel;
 
@@ -172,20 +181,24 @@ public class Enemy : MonoBehaviour, IDamage
     
     public void Stress() // Gestion du stress de l'unité
     {
+        ReloadDestination();
         switch (indexStressLevel)
         {
             case 0:
                 //state = baseState;
                 txtStressLevel.text = "" + EnemyStress.Normal;
                 stress = EnemyStress.Normal;
+                _lineOfSight.sideeys.color = new Color(1, 1, 1 ,.2f);
                 break;
             case 1:
                 txtStressLevel.text = "" + EnemyStress.Worried;
                 stress = EnemyStress.Worried;
+                _lineOfSight.sideeys.color = new Color(1, .5f, 0, .2f);
                 break;
             case 2:
                 txtStressLevel.text = "" + EnemyStress.Panic;
                 stress = EnemyStress.Panic;
+                _lineOfSight.sideeys.color = new Color(1, 0, 0, .2f);
                 break;
         }
     }
@@ -213,7 +226,9 @@ public class Enemy : MonoBehaviour, IDamage
 
     void PatrolNormal()
     {
+        agent.speed = normalSpeed;
         _animator.enabled = false;
+        _animator.speed = 1;
         if (Vector3.Distance(transform.position, target) < 1 && waypoints.Length != 0)
         {
             IterateWaypointIndex();
@@ -223,12 +238,21 @@ public class Enemy : MonoBehaviour, IDamage
 
     void PatrolWorried()
     {
+        agent.speed = normalSpeed;
         _animator.enabled = true;
+        _animator.speed = 1;
+        if (Vector3.Distance(transform.position, target) < 1 && waypoints.Length != 0)
+        {
+            IterateWaypointIndex();
+            Destination();
+        }
     }
 
     void PatrolPanic()
     {
+        agent.speed = panicSpeed;
         _animator.enabled = true;
+        _animator.speed = 1.2f;
         if (Vector3.Distance(transform.position, target) < 1 && waypoints.Length != 0)
         {
             IterateWaypointIndex();
@@ -351,7 +375,7 @@ public class Enemy : MonoBehaviour, IDamage
     public void Push(float pushForce, float pushDuration)
     {
         GetComponent<NavMeshAgent>().enabled = false;
-        GetComponentInChildren<LineOfSight>().StopCoroutine(GetComponentInChildren<LineOfSight>().detect_player);
+        _lineOfSight.StopCoroutine(_lineOfSight.detect_player);
         GetComponentInChildren<SphereCollider>().enabled = false;
         
         Rigidbody rb = transform.AddComponent<Rigidbody>();
