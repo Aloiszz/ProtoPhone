@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
 using DG.Tweening;
+using Unity.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class PlayerController : MonoBehaviour
     private float gravityValue = -9.81f;
 
     public PlayerInput playerInput;
+    private InputAction Move;
+    private InputAction TouchPosition;
+    
     [SerializeField] private float damage = 100;
 
     [Header("Roll")]
@@ -58,21 +62,23 @@ public class PlayerController : MonoBehaviour
         initPlayerSeed = playerSpeed;
         isCovered = true;
     }
+    
+    
+    void OnEnable()
+    {
+        playerInput.enabled = true;
+    }
+    void OnDisable()
+    {
+        playerInput.enabled = false;
+    }
 
+    public LayerMask mask;
+    public bool isClosedEnough;
     void Update()
     {
         Ray();
         Movement();
-        
-        /*if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                agent.SetDestination(hit.point);
-            }
-        }*/
         
         //Debug
         if (Input.GetKeyDown(KeyCode.Space))
@@ -106,8 +112,9 @@ public class PlayerController : MonoBehaviour
     private void Ray()
     {
         Debug.DrawRay(transform.position, transform.forward * 2, Color.red);
-        
         RaycastHit hit;
+        bool detected = (Physics.Raycast(transform.position, transform.forward, out hit, 2f, mask));
+        isClosedEnough = detected;
         if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
         {
             if (hit.transform.GetComponent<Enemy>() != null && isCovered && isRolling)
@@ -118,6 +125,22 @@ public class PlayerController : MonoBehaviour
             if (hit.transform.GetComponent<IInteractable>() != null && isRolling)
             {
                 hit.transform.GetComponent<IInteractable>().Interact();
+            }
+        }
+        
+        
+        RaycastHit hit2;
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit2, 1000, mask))
+            {
+                Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 2);
+                Debug.Log(hit.transform.name);
+                if (hit2.transform.GetComponent<Enemy>() != null && detected)
+                {
+                    hit2.transform.GetComponent<Enemy>().Damage(100);
+                }
             }
         }
     }
