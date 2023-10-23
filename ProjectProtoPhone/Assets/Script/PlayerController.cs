@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Net.Http.Headers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,9 +21,9 @@ public class PlayerController : MonoBehaviour
     private float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
 
-    public PlayerInput playerInput;
+    public Playeraction playerInput;
     private InputAction Move;
-    private InputAction TouchPosition;
+    private InputAction Touch;
     
     [SerializeField] private float damage = 100;
 
@@ -54,7 +55,7 @@ public class PlayerController : MonoBehaviour
             instance = this;
         }
         controller = gameObject.AddComponent<CharacterController>();
-        playerInput = GetComponent<PlayerInput>();
+        playerInput = new Playeraction();
     }
 
     private void Start()
@@ -66,11 +67,17 @@ public class PlayerController : MonoBehaviour
     
     void OnEnable()
     {
-        playerInput.enabled = true;
+        Move = playerInput.Player.Move;
+        Move.Enable();
+
+        Touch = playerInput.Player.Touch;
+        Touch.Enable();
+        Touch.performed += TouchPressed;
     }
     void OnDisable()
     {
-        playerInput.enabled = false;
+        Move.Disable();
+        Touch.Enable();
     }
 
     public LayerMask mask;
@@ -109,9 +116,15 @@ public class PlayerController : MonoBehaviour
         isRolling = false;
     }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.color=Color.red;
+    }
+
     private void Ray()
     {
         Debug.DrawRay(transform.position, transform.forward * 2, Color.red);
+        
         RaycastHit hit;
         bool detected = (Physics.Raycast(transform.position, transform.forward, out hit, 2f, mask));
         isClosedEnough = detected;
@@ -119,7 +132,7 @@ public class PlayerController : MonoBehaviour
         {
             if (hit.transform.GetComponent<Enemy>() != null && isCovered && isRolling)
             {
-                hit.transform.GetComponent<Enemy>().GiveKey();
+                hit.transform.GetComponent<Enemy>().Push(pushForce, pushDuration);
             }
 
             if (hit.transform.GetComponent<IInteractable>() != null && isRolling)
@@ -128,24 +141,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         
-        
-        RaycastHit hit2;
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit2, 1000, mask))
-            {
-                Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 2);
-                Debug.Log(hit.transform.name);
-                if (hit2.transform.GetComponent<Enemy>() != null && detected)
-                {
-                    hit2.transform.GetComponent<Enemy>().Damage(100);
-                }
-            }
-        }
     }
-    
-    
     void Movement()
     {
         groundedPlayer = controller.isGrounded;
@@ -154,7 +150,7 @@ public class PlayerController : MonoBehaviour
             playerVelocity.y = 0f;
         }
 
-        Vector2 input = playerInput.actions["Move"].ReadValue<Vector2>();
+        Vector2 input = Move.ReadValue<Vector2>();
         Vector3 move = new Vector3(input.x, 0,input.y);
         controller.Move(move * Time.deltaTime * playerSpeed);
 
@@ -165,5 +161,19 @@ public class PlayerController : MonoBehaviour
 
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
+    }
+
+    void TouchPressed(InputAction.CallbackContext ctx) // Kill l'ennemy
+    {
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit2;
+        if (Physics.Raycast(ray, out hit2, 1000, mask))
+        {
+            Debug.DrawRay(ray.origin, ray.direction * 100, Color.red, 2);
+            if (hit2.transform.GetComponent<Enemy>() != null && isClosedEnough)
+            {
+                hit2.transform.GetComponent<Enemy>().Damage(100);
+            }
+        }
     }
 }

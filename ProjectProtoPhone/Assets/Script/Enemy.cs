@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -20,8 +21,17 @@ public class Enemy : MonoBehaviour, IDamage
         alert1, // Palier 1
         checkObject
     }
-
     public EnemyState state;
+    
+    public enum EnemyStress
+    {
+        Normal,
+        Worried,
+        Panic
+    }
+
+    public EnemyStress stress;
+    
     public bool canGiveCard;
     private bool doOnce;
     [HideInInspector] public EnemyState baseState;
@@ -62,7 +72,8 @@ public class Enemy : MonoBehaviour, IDamage
         txtStressLevel.text = "" + indexStressLevel;
 
         ReloadDestination();
-        AddStress(0);
+        indexStressLevel = 0;
+        Stress();
     }
 
     public void ReloadDestination()
@@ -79,6 +90,7 @@ public class Enemy : MonoBehaviour, IDamage
         {
             Instantiate(bloodSheld, transform.position, Quaternion.identity);
             Destroy(gameObject);
+            GiveKey();
         }
 
         switch (state)
@@ -141,28 +153,65 @@ public class Enemy : MonoBehaviour, IDamage
         _animator.enabled = true;
     }
 
-    
-    public void AddStress(int indexStressLevel) // Gestion du stress de l'unité
+
+    #region Stress
+
+    [ContextMenu("AddStress")]
+    public void AddStress()
     {
-        switch (this.indexStressLevel)
+        indexStressLevel++;
+        Stress();
+    }
+    
+    [ContextMenu("ReduceStress")]
+    public void ReduceStress()
+    {
+        indexStressLevel--;
+        Stress();
+    }
+    
+    public void Stress() // Gestion du stress de l'unité
+    {
+        switch (indexStressLevel)
         {
             case 0:
                 //state = baseState;
-                txtStressLevel.text = "Palier " + this.indexStressLevel;
+                txtStressLevel.text = "" + EnemyStress.Normal;
+                stress = EnemyStress.Normal;
                 break;
             case 1:
-                txtStressLevel.text = "Palier " + this.indexStressLevel;
+                txtStressLevel.text = "" + EnemyStress.Worried;
+                stress = EnemyStress.Worried;
                 break;
             case 2:
-                txtStressLevel.text = "Palier " + this.indexStressLevel;
+                txtStressLevel.text = "" + EnemyStress.Panic;
+                stress = EnemyStress.Panic;
                 break;
         }
     }
 
+    #endregion
+    
 
     #region Patrol
 
     void StatePatrol()
+    {
+        switch (stress)
+        {
+            case EnemyStress.Normal:
+                PatrolNormal();
+                break;
+            case EnemyStress.Worried:
+                PatrolWorried();
+                break;
+            case EnemyStress.Panic:
+                PatrolPanic();
+                break;
+        }
+    }
+
+    void PatrolNormal()
     {
         _animator.enabled = false;
         if (Vector3.Distance(transform.position, target) < 1 && waypoints.Length != 0)
@@ -172,6 +221,22 @@ public class Enemy : MonoBehaviour, IDamage
         }
     }
 
+    void PatrolWorried()
+    {
+        _animator.enabled = true;
+    }
+
+    void PatrolPanic()
+    {
+        _animator.enabled = true;
+        if (Vector3.Distance(transform.position, target) < 1 && waypoints.Length != 0)
+        {
+            IterateWaypointIndex();
+            Destination();
+        }
+    }
+    
+    #endregion
     void Destination() // se rend a la prochaine localisation de sa patrouille
     {
         target = waypoints[waypointIndex].position;
@@ -192,7 +257,7 @@ public class Enemy : MonoBehaviour, IDamage
         agent.ResetPath();
     }
 
-    #endregion
+    
 
 
     void StateAlert()
@@ -280,6 +345,31 @@ public class Enemy : MonoBehaviour, IDamage
             blueCard.GetComponent<Cards>().enemy = GetComponent<Enemy>();
             doOnce = true;
         }
+    }
+
+
+    public void Push(float pushForce, float pushDuration)
+    {
+        GetComponent<NavMeshAgent>().enabled = false;
+        GetComponentInChildren<LineOfSight>().StopCoroutine(GetComponentInChildren<LineOfSight>().detect_player);
+        GetComponentInChildren<SphereCollider>().enabled = false;
+        
+        Rigidbody rb = transform.AddComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        rb.AddForce((transform.position - PlayerController.instance.transform.position).normalized * pushForce , ForceMode.Impulse);
+        
+        txtDialogue.text = "Rompiche ...";
+        StartCoroutine(waitToWakeUp(pushDuration));
+    }
+
+    IEnumerator waitToWakeUp(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        GetComponent<NavMeshAgent>().enabled = true;
+        GetComponentInChildren<SphereCollider>().enabled = true;
+        Destroy(GetComponent<Rigidbody>());
+        ReloadDestination();
+        txtDialogue.text = "Au boulot";
     }
 }
 

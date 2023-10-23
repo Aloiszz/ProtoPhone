@@ -17,7 +17,7 @@ public class LineOfSight : MonoBehaviour
     private Collider player_collider;
     private SphereCollider detection_collider;
     private Bounds player_bounds;
-    private Coroutine detect_player;
+    public Coroutine detect_player;
     public bool isHiden;
     public SpriteRenderer sideeys;
 
@@ -160,7 +160,6 @@ public class LineOfSight : MonoBehaviour
                         sideeys.color = new Color(1, 0, 0, .2f);
                         _enemy.state = Enemy.EnemyState.alert1; // Les enemey sont alerté 
                         canCheckLastPos = true;
-                        _enemy.AddStress(1);
                     }
                 }
             }
@@ -168,7 +167,7 @@ public class LineOfSight : MonoBehaviour
     }
 
 
-    IEnumerator DetectBox()
+    private IEnumerator DetectBox()
     {
         while (true)
         {
@@ -222,7 +221,6 @@ public class LineOfSight : MonoBehaviour
 
                             case ObjectInteractive.State.Destroyed:
                                 sideeys.color = new Color(1, .5f, 0, .2f);
-                                _enemy.AddStress(1);
                                 
                                 if (!i.GetComponent<ObjectInteractive>()
                                         .isInspected) // si l'object n'est pas encore inspecté
