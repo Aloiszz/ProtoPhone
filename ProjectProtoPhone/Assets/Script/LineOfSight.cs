@@ -217,9 +217,9 @@ public class LineOfSight : MonoBehaviour
                                 break;
 
                             case ObjectInteractive.State.Destroyed:
-                                if (!ListOfPointLists.list[boxCollider.IndexOf(collider)].hasAddStress)
+                                if (!i.GetComponent<ObjectInteractive>().hasAddedStress)
                                 {
-                                    ListOfPointLists.list[boxCollider.IndexOf(collider)].hasAddStress = true;
+                                    i.GetComponent<ObjectInteractive>().hasAddedStress = true;
                                     _enemy.AddStress();
                                 }
                                 
