@@ -42,6 +42,9 @@ public class PlayerController : MonoBehaviour
     
     public Camera cam;
     public NavMeshAgent agent;
+
+    [Header("anim")] 
+    public Animator _animator;
     
     private void Awake()
     {
@@ -102,6 +105,7 @@ public class PlayerController : MonoBehaviour
         isRolling = true;
         playerSpeed += rollForce;
         StartCoroutine(RollCd());
+        _animator.SetBool("isRolling", isRolling);
     }
 
     private IEnumerator RollCd()
@@ -114,6 +118,7 @@ public class PlayerController : MonoBehaviour
     {
         playerSpeed = initPlayerSeed;
         isRolling = false;
+        _animator.SetBool("isRolling", isRolling);
     }
 
     private void OnDrawGizmos()
@@ -157,6 +162,11 @@ public class PlayerController : MonoBehaviour
         if (move != Vector3.zero)
         {
             gameObject.transform.forward = move;
+            _animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            _animator.SetBool("isRunning", false);
         }
 
         playerVelocity.y += gravityValue * Time.deltaTime;
